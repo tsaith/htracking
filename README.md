@@ -1,4 +1,4 @@
-# Hand Tracking via Computer vision
+# Hand tracking via computer vision
 
 Python 3 is expected.
 
