@@ -15,6 +15,7 @@ doc/_build
 # Weights
 *.weights
 *.h5
+*.pth
 
 # Temporary files
 tmp/
