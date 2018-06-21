@@ -12,6 +12,10 @@ doc/_build
 # Temporary files of testing
 .cache/
 
+# Weights
+*.weights
+*.h5
+
 # Temporary files
 tmp/
 wrap.cpp

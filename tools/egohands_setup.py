@@ -6,7 +6,7 @@ https://github.com/GustavZ/deeptraining_hands
 https://github.com/victordibia/handtracking
 """
 
-from htracking.utils.dataset import csv_to_pascal_voc
+from htracking.datasets import csv_to_voc
 
 import scipy.io as sio
 import numpy as np
@@ -257,7 +257,7 @@ def prepare_cvs_files():
                sh.move(src_dir+file,drc_dir+file)
     sh.rmtree('egohands')
 
-def prepare_pascal_voc():
+def prepare_voc():
 
     print('Creating the xml files.')
     cwd = os.getcwd()
@@ -265,7 +265,7 @@ def prepare_pascal_voc():
         csv_name = directory + '_labels.csv'
         csv_path = os.path.join(cwd, 'data', csv_name)
         xml_dir_path = os.path.join(cwd, 'data', directory, 'xml')
-        csv_to_pascal_voc(csv_path, xml_dir_path)
+        csv_to_voc(csv_path, xml_dir_path)
 
 
 
@@ -275,6 +275,6 @@ EGO_HANDS_FILE = "egohands_data.zip"
 download_egohands_dataset(EGOHANDS_DATASET_URL, EGO_HANDS_FILE)
 create_label_map()
 prepare_cvs_files()
-prepare_pascal_voc()
+prepare_voc()
 
 print("Complete setting up the dataset.")

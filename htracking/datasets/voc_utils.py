@@ -1,9 +1,10 @@
-from htracking.utils.dataset import PascalVocAnnotation
+from . import VocAnnotation
 import os
 import csv
+from PIL import Image, ImageDraw
 
 
-def csv_to_pascal_voc(csv_path, xml_dir_path):
+def csv_to_voc(csv_path, xml_dir_path):
     # Convert one csv file into xml files with Pascal Voc format.
 
     if not os.path.exists(xml_dir_path):
@@ -24,7 +25,7 @@ def csv_to_pascal_voc(csv_path, xml_dir_path):
         xmax = row['xmax']
         ymax = row['ymax']
 
-        ann = PascalVocAnnotation(filename, width, height, depth=3)
+        ann = VocAnnotation(filename, width, height, depth=3)
         new_object = [class_name, 0, xmin, ymin, xmax, ymax]
         ann.add_object(new_object)
 

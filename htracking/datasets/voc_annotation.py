@@ -1,6 +1,6 @@
-from htracking.utils.dataset import PascalVocWriter
+from . import VocWriter
 
-class PascalVocAnnotation:
+class VocAnnotation:
     '''
     Pascal Voc Annotation.
     '''
@@ -26,7 +26,7 @@ class PascalVocAnnotation:
         image_size = [self.height, self.width, self.depth]
         image_path = self.filepath
 
-        writer = PascalVocWriter(dirname, self.filename, imgSize=image_size, databaseSrc='Unknown', 
+        writer = VocWriter(dirname, self.filename, imgSize=image_size, databaseSrc='Unknown', 
                                  localImgPath=image_path)
         root = writer.genXML()
         writer.appendObjects(root)
