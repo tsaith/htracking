@@ -1,3 +1,4 @@
+numpy==1.13.3
 Keras==2.1.5
 tensorflow-gpu==1.4.0
 torch==0.4.0
