@@ -1,10 +1,12 @@
-import torch.utils.data as data
-from PIL import Image, ImageDraw
+#import torch.utils.data as data
+from torch.utils.data import Dataset
 import os
-import os.path
+#import os.path
 import sys
-import xml.etree.ElementTree as ET
 import glob
+import copy
+from PIL import Image, ImageDraw
+import xml.etree.ElementTree as ET
 
 def xml_annotations(filepath):
     '''
@@ -45,7 +47,8 @@ def xml_annotations(filepath):
 
     return anns
 
-class VOCDetection(data.Dataset):
+
+class VOCDetection(Dataset):
     '''
     Dataset of Pascal VOC Detection.
     '''
@@ -63,6 +66,12 @@ class VOCDetection(data.Dataset):
 
         self.anns = [xml_annotations(f) for f in ann_files]
 
+        # Object names
+        self.names = self.prepare_object_names()
+
+        # Name dictionary
+        self.namedict = self.prepare_namedict()
+
 
     def __getitem__(self, index):
 
@@ -72,7 +81,10 @@ class VOCDetection(data.Dataset):
         image_path = os.path.join(self.image_dir, filename)
         image = Image.open(image_path).convert('RGB')
 
-        target = ann['objects']
+        target = copy.deepcopy(ann['objects'])
+
+        for obj in target:
+            obj[0] = self.namedict[obj[0]]
 
         if self.transform is not None:
             image = self.transform(image)
@@ -85,6 +97,24 @@ class VOCDetection(data.Dataset):
     def __len__(self):
         return len(self.anns)
 
+    def prepare_object_names(self):
+        # Prepare the object names
+        names = []
+        for ann in self.anns:
+            objects = ann['objects']
+            for obj in objects:
+                names.append(obj[0])
+        return sorted(list(set(names)))
+
+    def prepare_namedict(self):
+        # Prepare the name dictionary
+
+        namedict = {}
+        for i, name in enumerate(self.names):
+            namedict[name] = i
+
+        return namedict
+
     def show(self, index):
         # Show the image with bbox
         # You might need to install ImageMagic for Image.show() to work properly.
@@ -93,9 +123,11 @@ class VOCDetection(data.Dataset):
         img, target = self.__getitem__(index)
         draw = ImageDraw.Draw(img)
         for obj in target:
+            name = self.names[obj[0]]
             draw.rectangle(obj[1:5], outline=(255,0,0))
-            draw.text(obj[1:3], obj[0], fill=(0,255,0))
+            draw.text(obj[1:3], name, fill=(0,255,0))
         img.show()
+
 
 
 class TransformVOCDetectionAnnotation(object):
@@ -122,7 +154,7 @@ class TransformVOCDetectionAnnotation(object):
 
         return res
 
-class VOC2007Detection(data.Dataset):
+class VOC2007Detection(Dataset):
     def __init__(self, root, image_set, transform=None, target_transform=None):
         self.root = root
         self.image_set = image_set
@@ -164,7 +196,7 @@ class VOC2007Detection(data.Dataset):
         img.show()
 
 
-class VOC2007Segmentation(data.Dataset):
+class VOC2007Segmentation(Dataset):
     def __init__(self, root, image_set, transform=None, target_transform=None):
         self.root = root
         self.image_set = image_set

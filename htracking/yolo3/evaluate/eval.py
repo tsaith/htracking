@@ -45,7 +45,9 @@ def evaluate(config):
                                     config["yolo"]["classes"], (config["img_w"], config["img_h"])))
 
     # DataLoader
-    dataloader = torch.utils.data.DataLoader(COCODataset(config["val_path"]),
+    dataloader = torch.utils.data.DataLoader(COCODataset(config["val_path"],
+                                                         (config["img_w"], config["img_h"]),
+                                                         is_training=False),
                                              batch_size=config["batch_size"],
                                              shuffle=False, num_workers=16, pin_memory=False)
 
@@ -53,7 +55,8 @@ def evaluate(config):
     logging.info("Start eval.")
     n_gt = 0
     correct = 0
-    for step, (images, labels) in enumerate(dataloader):
+    for step, samples in enumerate(dataloader):
+        images, labels = samples["image"], samples["label"]
         labels = labels.cuda()
         with torch.no_grad():
             outputs = net(images)
@@ -91,7 +94,7 @@ def main():
                         format="[%(asctime)s %(filename)s] %(message)s")
 
     if len(sys.argv) != 2:
-        logging.error("Usage: python training.py params.py")
+        logging.error("Usage: python eval.py params.py")
         sys.exit()
     params_path = sys.argv[1]
     if not os.path.isfile(params_path):

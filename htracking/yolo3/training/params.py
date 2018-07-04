@@ -15,19 +15,19 @@ TRAINING_PARAMS = \
         "other_lr": 0.01,
         "freeze_backbone": False,   #  freeze backbone wegiths to finetune
         "decay_gamma": 0.1,
-        "decay_step": 30,           #  decay lr in every ? epochs
+        "decay_step": 20,           #  decay lr in every ? epochs
     },
     "optimizer": {
         "type": "sgd",
         "weight_decay": 4e-05,
     },
-    "batch_size": 8,
+    "batch_size": 8, # 16
     "train_path": "../data/coco/trainvalno5k.txt",
-    "epochs": 3,
+    "epochs": 2, # 100
     "img_h": 416,
     "img_w": 416,
     "parallels": [0,1,2,3],                         #  config GPU device
-    "working_dir": "/home/andrew/projects/YOLOv3_PyTorch/training",              #  replace with your working dir
+    "working_dir": "YOUR_WORKING_DIR",              #  replace with your working dir
     "pretrain_snapshot": "",                        #  load checkpoint
     "evaluate_type": "", 
     "try": 0,
