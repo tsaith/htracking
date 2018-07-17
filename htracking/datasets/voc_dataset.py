@@ -1,4 +1,5 @@
 #import torch.utils.data as data
+
 from torch.utils.data import Dataset
 import os
 #import os.path
@@ -75,13 +76,7 @@ class VOCDetection(Dataset):
 
     def __getitem__(self, index):
 
-        ann = self.anns[index]
-
-        filename = ann['filename']
-        image_path = os.path.join(self.image_dir, filename)
-        image = Image.open(image_path).convert('RGB')
-
-        target = copy.deepcopy(ann['objects'])
+        image, target = self.get_raw_item(index)
 
         for obj in target:
             obj[0] = self.namedict[obj[0]]
@@ -92,10 +87,25 @@ class VOCDetection(Dataset):
         if self.target_transform is not None:
             target = self.target_transform(target)
 
-        return image, target
+        sample = sample = {'image': image, 'label': target}
+
+        return sample
 
     def __len__(self):
         return len(self.anns)
+
+    def get_raw_item(self, index):
+
+        ann = self.anns[index]
+
+        filename = ann['filename']
+        image_path = os.path.join(self.image_dir, filename)
+        image = Image.open(image_path).convert('RGB')
+
+        target = copy.deepcopy(ann['objects'])
+
+        return image, target
+
 
     def prepare_object_names(self):
         # Prepare the object names
@@ -115,18 +125,24 @@ class VOCDetection(Dataset):
 
         return namedict
 
-    def show(self, index):
+    def imshow(self, index):
         # Show the image with bbox
         # You might need to install ImageMagic for Image.show() to work properly.
         # e.g. sudo apt-get install imagemagick
 
-        img, target = self.__getitem__(index)
-        draw = ImageDraw.Draw(img)
+        image, target = self.get_raw_item(index)
+
+        for obj in target:
+            obj[0] = self.namedict[obj[0]]
+
+        #img, target = self.__getitem__(index)
+        draw = ImageDraw.Draw(image)
         for obj in target:
             name = self.names[obj[0]]
             draw.rectangle(obj[1:5], outline=(255,0,0))
             draw.text(obj[1:3], name, fill=(0,255,0))
-        img.show()
+
+        image.show()
 
 
 
