@@ -102,8 +102,8 @@ class YOLOLoss(nn.Module):
         th = torch.zeros(bs, self.num_anchors, in_h, in_w, requires_grad=False)
         tconf = torch.zeros(bs, self.num_anchors, in_h, in_w, requires_grad=False)
         tcls = torch.zeros(bs, self.num_anchors, in_h, in_w, self.num_classes, requires_grad=False)
-        for b in range(bs):
-            for t in range(target.shape[1]):
+        for b in range(bs): # instance
+            for t in range(target.shape[1]): # object
                 if target[b, t].sum() == 0:
                     continue
                 # Convert to position relative to box

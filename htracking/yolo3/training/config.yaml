@@ -24,10 +24,10 @@ optimizer:
     
 batch_size: 8  #16
 train_path: /home/andrew/projects/htracking/htracking/yolo3/data/coco/trainvalno5k.txt
-epochs: 100
+epochs: 3
 img_h: 416
 img_w: 416
-parallels: [0]                         #  config GPU device
+parallels: [0, 1, 2]                         #  config GPU device
 working_dir: "YOUR_WORKING_DIR"             #  replace with your working dir
 pretrain_snapshot: ""                       #  load checkpoint
 evaluate_type": "" 

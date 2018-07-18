@@ -54,11 +54,14 @@ class VOCDetection(Dataset):
     Dataset of Pascal VOC Detection.
     '''
 
-    def __init__(self, image_dir, ann_dir, transform=None, target_transform=None):
+    def __init__(self, image_dir, ann_dir, transform=None, target_transform=None,
+                 normalize_coordinates=True):
+
         self.image_dir = image_dir
         self.ann_dir = ann_dir
         self.transform = transform
         self.target_transform = target_transform
+        self.normalize_coordinates = normalize_coordinates
 
         if os.path.exists(ann_dir):
             ann_files = glob.glob(os.path.join(self.ann_dir, '*.xml'))
@@ -77,9 +80,18 @@ class VOCDetection(Dataset):
     def __getitem__(self, index):
 
         image, target = self.get_raw_item(index)
+        width, height = image.size
 
+        # Target format: [class, x, y, w, h]
         for obj in target:
             obj[0] = self.namedict[obj[0]]
+
+            # Normalize object's coordinates
+            if self.normalize_coordinates:
+                obj[1] *= 1.0/width
+                obj[2] *= 1.0/height
+                obj[3] *= 1.0/width
+                obj[4] *= 1.0/height
 
         if self.transform is not None:
             image = self.transform(image)
@@ -87,8 +99,7 @@ class VOCDetection(Dataset):
         if self.target_transform is not None:
             target = self.target_transform(target)
 
-        sample = sample = {'image': image, 'label': target}
-
+        sample = {'image': image, 'label': target}
         return sample
 
     def __len__(self):
@@ -102,6 +113,7 @@ class VOCDetection(Dataset):
         image_path = os.path.join(self.image_dir, filename)
         image = Image.open(image_path).convert('RGB')
 
+        # Target format: [class, x, y, w, h]
         target = copy.deepcopy(ann['objects'])
 
         return image, target
