@@ -54,7 +54,7 @@ class VOCDetection(Dataset):
     Dataset of Pascal VOC Detection.
     '''
 
-    def __init__(self, image_dir, ann_dir, transform=None, target_transform=None,
+    def __init__(self, image_dir, ann_dir, classes=None, transform=None, target_transform=None,
                  normalize_coordinates=True):
 
         self.image_dir = image_dir
@@ -80,18 +80,6 @@ class VOCDetection(Dataset):
     def __getitem__(self, index):
 
         image, target = self.get_raw_item(index)
-        width, height = image.size
-
-        # Target format: [class, x, y, w, h]
-        for obj in target:
-            obj[0] = self.namedict[obj[0]]
-
-            # Normalize object's coordinates
-            if self.normalize_coordinates:
-                obj[1] *= 1.0/width
-                obj[2] *= 1.0/height
-                obj[3] *= 1.0/width
-                obj[4] *= 1.0/height
 
         if self.transform is not None:
             image = self.transform(image)
@@ -112,9 +100,29 @@ class VOCDetection(Dataset):
         filename = ann['filename']
         image_path = os.path.join(self.image_dir, filename)
         image = Image.open(image_path).convert('RGB')
+        width, height = image.size
 
-        # Target format: [class, x, y, w, h]
+        # Target format: [class, xmin, ymin, xmax, ymax]
         target = copy.deepcopy(ann['objects'])
+
+        for obj in target:
+
+            # object's attributes
+            class_name, xmin, ymin, xmax, ymax = obj
+
+            # Map class name into class index
+            obj[0] = self.namedict[class_name]
+
+            # Convet [xmin, ymin, xmax, ymax] into [xmin, ymin, width, height]
+            obj[3] = xmax-xmin
+            obj[4] = ymax-ymin
+
+            # Normalize object's coordinates
+            if self.normalize_coordinates:
+                obj[1] *= 1.0/width
+                obj[2] *= 1.0/height
+                obj[3] *= 1.0/width
+                obj[4] *= 1.0/height
 
         return image, target
 
@@ -143,16 +151,27 @@ class VOCDetection(Dataset):
         # e.g. sudo apt-get install imagemagick
 
         image, target = self.get_raw_item(index)
+        image_width, image_height = image.size
 
-        for obj in target:
-            obj[0] = self.namedict[obj[0]]
-
-        #img, target = self.__getitem__(index)
         draw = ImageDraw.Draw(image)
+
         for obj in target:
-            name = self.names[obj[0]]
-            draw.rectangle(obj[1:5], outline=(255,0,0))
-            draw.text(obj[1:3], name, fill=(0,255,0))
+
+            class_index, xmin, ymin, width, height = obj
+            name = self.names[class_index]
+
+            # coordinates in pixel unit
+            xmin = int(xmin * image_width)
+            ymin = int(ymin * image_height)
+            width = int(width * image_width)
+            height = int(height * image_height)
+
+            xmax = xmin + width
+            ymax = ymin + height
+
+            draw.rectangle((xmin, ymin, xmax, ymax), outline=(255,0,0))
+            #draw.text([20, 70], name, fill=(0,255,0))
+            draw.text((xmin, ymin), name, fill=(0,255,0))
 
         image.show()
 

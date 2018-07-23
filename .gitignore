@@ -19,6 +19,7 @@ doc/_build
 
 # Temporary files
 tmp/
+run/
 wrap.cpp
 *.o
 *.pyc

@@ -1,4 +1,18 @@
-# coding='utf-8'
+
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+import yaml
+
+import os
+import sys
+
+
+import htracking
+from htracking.utils import read_config
+
+
 import os
 import sys
 import numpy as np
@@ -12,23 +26,20 @@ import cv2
 import random
 
 import matplotlib
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.ticker import NullLocator
 
 import torch
 import torch.nn as nn
-import argparse
 
-import htracking
-from htracking.utils import read_config
+#yolo3_path = "/home/andrew/projects/htracking/htracking/yolo3"
+#sys.path.insert(0, yolo3_path)
 
-MY_DIRNAME = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(MY_DIRNAME, '..'))
-from nets.model_main import ModelMain
-from nets.yolo_loss import YOLOLoss
-from common.utils import non_max_suppression, bbox_iou
+from htracking.yolo3 import ModelMain, YOLOLoss
+from htracking.yolo3.common.utils import non_max_suppression, bbox_iou
+
 
 cmap = plt.get_cmap('tab20b')
 colors = [cmap(i) for i in np.linspace(0, 1, 20)]
@@ -36,6 +47,11 @@ colors = [cmap(i) for i in np.linspace(0, 1, 20)]
 
 def predict(config):
     is_training = False
+    classes = config["classes"]
+    num_classes = len(config["classes"])
+    predict_images_path = config["predict_images_path"]
+    predict_output_path = config["predict_output_path"]
+    
     # Load and initialize network
     net = ModelMain(config, is_training=is_training)
     net.train(is_training)
@@ -45,24 +61,25 @@ def predict(config):
     net = net.cuda()
 
     # Restore pretrain model
-    if config["pretrain_snapshot"]:
-        logging.info("load checkpoint from {}".format(config["pretrain_snapshot"]))
-        state_dict = torch.load(config["pretrain_snapshot"])
+    model_pretrained = config["model_pretrained"]
+    if model_pretrained:
+        logging.info("load checkpoint from {}".format(model_pretrained))
+        state_dict = torch.load(model_pretrained)
         net.load_state_dict(state_dict)
     else:
-        raise Exception("missing pretrain_snapshot!!!")
+        raise Exception("missing the model pretrained!!!")
 
     # YOLO loss with 3 scales
     yolo_losses = []
     for i in range(3):
         yolo_losses.append(YOLOLoss(config["yolo"]["anchors"][i],
-                                    config["yolo"]["classes"], (config["img_w"], config["img_h"])))
+                                    num_classes, (config["img_w"], config["img_h"])))
 
     # prepare images path
-    images_name = os.listdir(config["images_path"])
-    images_path = [os.path.join(config["images_path"], name) for name in images_name]
+    images_name = os.listdir(predict_images_path)
+    images_path = [os.path.join(predict_images_path, name) for name in images_name]
     if len(images_path) == 0:
-        raise Exception("no image found in {}".format(config["images_path"]))
+        raise Exception("no image found in {}".format(predict_images_path))
 
     # Start inference
     batch_size = config["batch_size"]
@@ -94,13 +111,13 @@ def predict(config):
             for i in range(3):
                 output_list.append(yolo_losses[i](outputs[i]))
             output = torch.cat(output_list, 1)
-            batch_detections = non_max_suppression(output, config["yolo"]["classes"],
-                                                   conf_thres=config["confidence_threshold"])
+            batch_detections = non_max_suppression(output, num_classes,
+                                                   conf_thres=config["confidence_thresh"])
 
         # write result images. Draw bounding boxes and labels of detections
-        classes = open(config["classes_names_path"], "r").read().split("\n")[:-1]
-        if not os.path.isdir("./output/"):
-            os.makedirs("./output/")
+        #classes = open(config["classes_names_path"], "r").read().split("\n")[:-1]
+        if not os.path.isdir(predict_output_path):
+            os.makedirs(predict_output_path)
         for idx, detections in enumerate(batch_detections):
             plt.figure()
             fig, ax = plt.subplots(1)
@@ -132,32 +149,23 @@ def predict(config):
             plt.axis('off')
             plt.gca().xaxis.set_major_locator(NullLocator())
             plt.gca().yaxis.set_major_locator(NullLocator())
-            plt.savefig('output/{}_{}.jpg'.format(step, idx), bbox_inches='tight', pad_inches=0.0)
+            saved_path = "{}/{}_{}.jpg".format(predict_output_path, step, idx)
+            plt.savefig(saved_path, bbox_inches='tight', pad_inches=0.0)
             plt.close()
-    logging.info("Save all results to ./output/")    
+
+    logging.info("Save all results to {}".format(predict_output_path))
 
 
+logging.basicConfig(level=logging.DEBUG,
+                    format="[%(asctime)s %(filename)s] %(message)s")
 
-if __name__ == "__main__":
+root_path = "/home/andrew/projects/htracking/htracking/yolo3/predict"
+config_name = "config.yaml"
+config_path = os.path.join(root_path, config_name)
+config = read_config(config_path)
 
-    # Construct the argument parser and parse the arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--config", required=False, default='config.yaml',
-                            help="Configuration path.")
-    parser.add_argument("-o", "--output", required=False, default='output', help="Output directory.")
-    args = parser.parse_args()
+config["batch_size"] *= len(config["parallels"])
 
-    config_path = args.config
-    output_path = args.output
-
-
-    logging.basicConfig(level=logging.DEBUG,
-                        format="[%(asctime)s %(filename)s] %(message)s")
-
-    config = read_config(config_path)
-    config["batch_size"] *= len(config["parallels"])
-
-    # Start training
-    os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(map(str, config["parallels"]))
-    predict(config)
-
+# Start training
+os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(map(str, config["parallels"]))
+predict(config)

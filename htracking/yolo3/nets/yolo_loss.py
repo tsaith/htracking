@@ -3,7 +3,7 @@ import torch.nn as nn
 import numpy as np
 import math
 
-from common.utils import bbox_iou
+from ..common.utils import bbox_iou
 
 
 class YOLOLoss(nn.Module):
