@@ -110,10 +110,10 @@ class VOCDetection(Dataset):
             # object's attributes
             class_name, xmin, ymin, xmax, ymax = obj
 
-            # Map class name into class index
+            # Convet [class_name, xmin, ymin, xmax, ymax] into [class_index, xc, yc, width, height]
             obj[0] = self.namedict[class_name]
-
-            # Convet [xmin, ymin, xmax, ymax] into [xmin, ymin, width, height]
+            obj[1] = 0.5*(xmin+xmax)
+            obj[2] = 0.5*(ymin+ymax)
             obj[3] = xmax-xmin
             obj[4] = ymax-ymin
 

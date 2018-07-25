@@ -1,16 +1,9 @@
-
 import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
-
-import yaml
 
 import os
 import sys
-
-import htracking
-from htracking.utils import read_config
-
+import argparse
+import yaml
 import time
 import datetime
 import json
@@ -23,165 +16,21 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 
+import torchvision
 from tensorboardX import SummaryWriter
-
-yolo3_path = "/home/andrew/projects/htracking/htracking/yolo3"
-sys.path.insert(0, yolo3_path)
-
-from nets.model_main import ModelMain
-from nets.yolo_loss import YOLOLoss
-from common.coco_dataset import COCODataset
 
 import htracking
 from htracking.datasets import VOCDetection
 from htracking.transforms import ListToNumpy, NumpyToTensor
+from htracking.utils import read_config
+from htracking.yolo3 import ModelMain, YOLOLoss
 
-import torch
-import torchvision as tv
 
-
-def train(config):
-    config["global_step"] = config.get("start_step", 0)
-    is_training = False if config.get("export_onnx") else True
-
-    # Load and initialize network
-    net = ModelMain(config, is_training=is_training)
-    net.train(is_training)
-
-    # Optimizer and learning rate
-    optimizer = _get_optimizer(config, net)
-    lr_scheduler = optim.lr_scheduler.StepLR(
-        optimizer,
-        step_size=config["lr"]["decay_step"],
-        gamma=config["lr"]["decay_gamma"])
-
-    # Set data parallel
-    net = nn.DataParallel(net)
-    net = net.cuda()
-
-    # Restore pretrain model
-    if config["pretrain_snapshot"]:
-        logging.info("Load pretrained weights from {}".format(config["pretrain_snapshot"]))
-        state_dict = torch.load(config["pretrain_snapshot"])
-        net.load_state_dict(state_dict)
-
-    # Only export onnx
-    # if config.get("export_onnx"):
-        # real_model = net.module
-        # real_model.eval()
-        # dummy_input = torch.randn(8, 3, config["img_h"], config["img_w"]).cuda()
-        # save_path = os.path.join(config["sub_working_dir"], "pytorch.onnx")
-        # logging.info("Exporting onnx to {}".format(save_path))
-        # torch.onnx.export(real_model, dummy_input, save_path, verbose=False)
-        # logging.info("Done. Exiting now.")
-        # sys.exit()
-
-    # Evaluate interface
-    # if config["evaluate_type"]:
-        # logging.info("Using {} to evaluate model.".format(config["evaluate_type"]))
-        # evaluate_func = importlib.import_module(config["evaluate_type"]).run_eval
-        # config["online_net"] = net
-
-    # YOLO loss with 3 scales
-    yolo_losses = []
-    for i in range(3):
-        yolo_losses.append(YOLOLoss(config["yolo"]["anchors"][i],
-                                    config["yolo"]["classes"], (config["img_w"], config["img_h"])))
-
-        
-    # DataLoader
-    #image_dir = '/home/andrew/projects/datasets/voc_2007/VOCdevkit/VOC2007/JPEGImages'
-    #ann_dir = '/home/andrew/projects/datasets/voc_2007/VOCdevkit/VOC2007/Annotations'
-    
-    
-    images_path = '/home/andrew/projects/datasets/fingers/train/images'
-    ann_path = '/home/andrew/projects/datasets/fingers/train/xml'    
-    
-    transform = tv.transforms.Compose([tv.transforms.ToTensor()])
-    target_transform = tv.transforms.Compose([ListToNumpy(), NumpyToTensor()])
-    dataset = VOCDetection(images_path, ann_path, transform=transform, target_transform=target_transform)
-   
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=config["batch_size"],
-                                             shuffle=True, num_workers=32, pin_memory=True)     
-        
-        
-    ## DataLoader
-    #dataloader = torch.utils.data.DataLoader(COCODataset(config["train_path"],
-    #                                                     (config["img_w"], config["img_h"]),
-    #                                                     is_training=True),
-    #                                         batch_size=config["batch_size"],
-    #                                         shuffle=True, num_workers=32, pin_memory=True)
-
-    # Start the training loop
-    logging.info("Start training.")
-    for epoch in range(config["epochs"]):
-        for step, samples in enumerate(dataloader):
-            images, labels = samples["image"], samples["label"]
-            start_time = time.time()
-            config["global_step"] += 1
-
-            # Forward and backward
-            optimizer.zero_grad()
-            outputs = net(images)
-            losses_name = ["total_loss", "x", "y", "w", "h", "conf", "cls"]
-            losses = [[]] * len(losses_name)
-            for i in range(3):
-                _loss_item = yolo_losses[i](outputs[i], labels)
-                for j, l in enumerate(_loss_item):
-                    losses[j].append(l)
-            losses = [sum(l) for l in losses]
-            loss = losses[0]
-            loss.backward()
-            optimizer.step()
-
-            if step > 0 and step % 10 == 0:
-                _loss = loss.item()
-                duration = float(time.time() - start_time)
-                example_per_second = config["batch_size"] / duration
-                lr = optimizer.param_groups[0]['lr']
-                logging.info(
-                    "epoch [%.3d] iter = %d loss = %.2f example/sec = %.3f lr = %.5f "%
-                    (epoch, step, _loss, example_per_second, lr)
-                )
-                config["tensorboard_writer"].add_scalar("lr",
-                                                        lr,
-                                                        config["global_step"])
-                config["tensorboard_writer"].add_scalar("example/sec",
-                                                        example_per_second,
-                                                        config["global_step"])
-                for i, name in enumerate(losses_name):
-                    value = _loss if i == 0 else losses[i]
-                    config["tensorboard_writer"].add_scalar(name,
-                                                            value,
-                                                            config["global_step"])
-
-            if step > 0 and step % 1000 == 0:
-                # net.train(False)
-                _save_checkpoint(net.state_dict(), config)
-                # net.train(True)
-
-        lr_scheduler.step()
-
-    # net.train(False)
-    _save_checkpoint(net.state_dict(), config)
-    # net.train(True)
-    logging.info("Bye~")
-
-# best_eval_result = 0.0
 def _save_checkpoint(state_dict, config, evaluate_func=None):
     # global best_eval_result
     checkpoint_path = os.path.join(config["sub_working_dir"], "model.pth")
     torch.save(state_dict, checkpoint_path)
     logging.info("Model checkpoint saved to %s" % checkpoint_path)
-    # eval_result = evaluate_func(config)
-    # if eval_result > best_eval_result:
-        # best_eval_result = eval_result
-        # logging.info("New best result: {}".format(best_eval_result))
-        # best_checkpoint_path = os.path.join(config["sub_working_dir"], 'model_best.pth')
-        # shutil.copyfile(checkpoint_path, best_checkpoint_path)
-        # logging.info("Best checkpoint saved to {}".format(best_checkpoint_path))
-    # else:
-        # logging.info("Best result: {}".format(best_eval_result))
 
 
 def _get_optimizer(config, net):
@@ -224,20 +73,35 @@ def _get_optimizer(config, net):
 
     return optimizer
 
+
+# Construct the argument parser and parse the arguments
+ap = argparse.ArgumentParser()
+ap.add_argument("-c", "--config", required=False, default='config.yaml', help="Configuaration file")
+args = vars(ap.parse_args())
+
+config_name = args['config']
+
+
 logging.basicConfig(level=logging.DEBUG,
                     format="[%(asctime)s %(filename)s] %(message)s")
 
-
-root_path = "/home/andrew/projects/htracking/htracking/yolo3"
-config_name = "config.yaml"
-config_path = os.path.join(root_path, 'training', config_name)
+# Read the configuration file
+cwd = os.getcwd()
+config_path = os.path.join(cwd, config_name)
 config = read_config(config_path)
 
-config["batch_size"] *= len(config["parallels"])
+gpu_devices = config["gpu_devices"]
+num_gpus = len(gpu_devices)
+batch_size = config["batch_size"] * num_gpus
+
+# Show parameters
+print("Start training:")
+print("gpu_devices = {}".format(gpu_devices))
+print("batch_size = {}".format(batch_size))
 
 # Create sub_working_dir
 sub_working_dir = '{}/{}/size{}x{}_try{}/{}'.format(
-    config['working_dir'], config['model_params']['backbone_name'], 
+    config['working_dir'], config['model_params']['backbone_name'],
     config['img_w'], config['img_h'], config['try'],
     time.strftime("%Y%m%d%H%M%S", time.localtime()))
 if not os.path.exists(sub_working_dir):
@@ -250,11 +114,109 @@ config["tensorboard_writer"] = SummaryWriter(sub_working_dir)
 logging.info("Please using 'python -m tensorboard.main --logdir={}'".format(sub_working_dir))
 
 # Start training
-os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(map(str, config["parallels"]))
+os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(map(str, gpu_devices))
 
-# Show parameters
-print("Main parameters:")
-print("batch_size = {}".format(config["batch_size"]))
-print("gpu_devices = {}".format(config["parallels"]))
 
-train(config)
+config["global_step"] = config.get("start_step", 0)
+is_training = False if config.get("export_onnx") else True
+classes = config['classes']
+num_classes = len(classes)
+
+# Load and initialize network
+net = ModelMain(config, is_training=is_training)
+net.train(is_training)
+
+# Optimizer and learning rate
+optimizer = _get_optimizer(config, net)
+lr_scheduler = optim.lr_scheduler.StepLR(
+    optimizer,
+    step_size=config["lr"]["decay_step"],
+    gamma=config["lr"]["decay_gamma"])
+
+# Set data parallel
+net = nn.DataParallel(net)
+net = net.cuda()
+
+# Restore pretrain model
+if config["pretrain_snapshot"]:
+    logging.info("Load pretrained weights from {}".format(config["pretrain_snapshot"]))
+    state_dict = torch.load(config["pretrain_snapshot"])
+    net.load_state_dict(state_dict)
+
+
+# YOLO loss with 3 scales
+yolo_losses = []
+for i in range(3):
+    yolo_losses.append(YOLOLoss(config["yolo"]["anchors"][i],
+                                num_classes, (config["img_w"], config["img_h"])))
+
+# Dataset
+train_images_path = config['train_images_path']
+train_ann_path = config['train_ann_path']
+
+transform = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
+target_transform = torchvision.transforms.Compose([ListToNumpy(), NumpyToTensor()])
+dataset = VOCDetection(train_images_path, train_ann_path, transform=transform, target_transform=target_transform)
+
+# Data loader
+dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
+                                         shuffle=True, num_workers=32, pin_memory=True)
+
+
+# Start the training loop
+logging.info("Start training.")
+for epoch in range(config["epochs"]):
+    for step, samples in enumerate(dataloader):
+        images, labels = samples["image"], samples["label"]
+        start_time = time.time()
+        config["global_step"] += 1
+
+        # Forward and backward
+        optimizer.zero_grad()
+        outputs = net(images)
+        losses_name = ["total_loss", "x", "y", "w", "h", "conf", "cls"]
+        losses = [[]] * len(losses_name)
+        for i in range(3):
+            _loss_item = yolo_losses[i](outputs[i], labels)
+            for j, l in enumerate(_loss_item):
+                losses[j].append(l)
+        losses = [sum(l) for l in losses]
+        loss = losses[0]
+        loss.backward()
+        optimizer.step()
+
+        if step > 0 and step % 10 == 0:
+            _loss = loss.item()
+            duration = float(time.time() - start_time)
+            example_per_second = batch_size / duration
+            lr = optimizer.param_groups[0]['lr']
+            logging.info(
+                "epoch [%.3d] iter = %d loss = %.2f example/sec = %.3f lr = %.5f "%
+                (epoch, step, _loss, example_per_second, lr)
+            )
+            config["tensorboard_writer"].add_scalar("lr",
+                                                    lr,
+                                                    config["global_step"])
+            config["tensorboard_writer"].add_scalar("example/sec",
+                                                    example_per_second,
+                                                    config["global_step"])
+            for i, name in enumerate(losses_name):
+                value = _loss if i == 0 else losses[i]
+                config["tensorboard_writer"].add_scalar(name,
+                                                        value,
+                                                        config["global_step"])
+
+        if step > 0 and step % 1000 == 0:
+            # net.train(False)
+            _save_checkpoint(net.state_dict(), config)
+            # net.train(True)
+
+    lr_scheduler.step()
+
+# net.train(False)
+_save_checkpoint(net.state_dict(), config)
+# net.train(True)
+logging.info("Bye~")
+
+
+

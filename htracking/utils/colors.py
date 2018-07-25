@@ -1,4 +1,4 @@
-def get_class_colors():
+def get_rgb_colors():
     """ Return a set of predefined colors. Contains 80 colors in total.
     code originally from https://github.com/fizyr/keras-retinanet/
 
