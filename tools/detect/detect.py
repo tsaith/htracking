@@ -44,10 +44,14 @@ config = read_config(config_path)
 gpu_devices = config["gpu_devices"]
 num_gpus = len(gpu_devices)
 batch_size = config["batch_size"] * num_gpus
+image_w = config["image_w"]
+image_h = config["image_h"]
+confidence_thresh = config['confidence_thresh']
 
-print("Predicting images:")
+
+print("Detecting images:")
 print("gpu_devices = {}".format(gpu_devices))
-print("batch_size = {}".format(batch_size))
+print("confidence_thresh = {}".format(confidence_thresh))
 
 # Start training
 os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(map(str, gpu_devices))
@@ -55,8 +59,8 @@ os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(map(str, gpu_devices))
 is_training = False
 classes = config["classes"]
 num_classes = len(classes)
-predict_images_path = config["predict_images_path"]
-predict_output_path = config["predict_output_path"]
+detect_images_path = config["detect_images_path"]
+detect_output_path = config["detect_output_path"]
 
 
 transform = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
@@ -82,27 +86,27 @@ else:
 yolo_losses = []
 for i in range(3):
     yolo_losses.append(YOLOLoss(config["yolo"]["anchors"][i],
-                                num_classes, (config["img_w"], config["img_h"])))
+                                num_classes, (image_w, image_h)))
 
 # prepare images path
-images_name = os.listdir(predict_images_path)
-images_path = [os.path.join(predict_images_path, name) for name in images_name]
+images_name = os.listdir(detect_images_path)
+images_path = [os.path.join(detect_images_path, name) for name in images_name]
 #images_path = images_path[:3]
 
 if len(images_path) == 0:
-    raise Exception("no image found in {}".format(predict_images_path))
+    raise Exception("no image found in {}".format(detect_images_path))
 
 # Start inference
 
 
-if not os.path.isdir(predict_output_path):
-    os.makedirs(predict_output_path)
+if not os.path.isdir(detect_output_path):
+    os.makedirs(detect_output_path)
 
 colors = get_rgb_colors()
 
+print("Detecting images under {}.".format(detect_images_path))
 for path in images_path:
 
-    logging.info("processing: {}".format(path))
     image = Image.open(path).convert('RGB')
     #image = cv2.imread(path, cv2.IMREAD_COLOR)
 
@@ -124,7 +128,7 @@ for path in images_path:
         for i in range(3):
             output_list.append(yolo_losses[i](output[i]))
         output = torch.cat(output_list, 1)
-        detections = non_max_suppression(output, num_classes, conf_thres=config["confidence_thresh"])  
+        detections = non_max_suppression(output, num_classes, conf_thres=confidence_thresh)
         detections = detections[0]
 
     # write result images. Draw bounding boxes and labels of detections
@@ -136,7 +140,7 @@ for path in images_path:
 
             # Rescale coordinates to original dimensions
             ori_h, ori_w = image_ori.shape[:2]
-            pre_h, pre_w = config["img_h"], config["img_w"]
+            pre_h, pre_w = image_h, image_w
             bbox_h = ((y2 - y1) / pre_h) * ori_h
             bbox_w = ((x2 - x1) / pre_w) * ori_w
             y1 = (y1 / pre_h) * ori_h
@@ -149,7 +153,8 @@ for path in images_path:
             draw_bbox(image_ori, bbox, label=lb, color=colors[cls_index])
 
 
-    output_path = os.path.join(predict_output_path, os.path.basename(path))
+    output_path = os.path.join(detect_output_path, os.path.basename(path))
     cv2.imwrite(output_path, np.uint8(image_ori))
 
-logging.info("done")
+print("Output the detected images to {}.".format(detect_output_path))
+print("done")

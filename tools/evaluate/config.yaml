@@ -10,8 +10,8 @@ train_images_path: /home/andrew/projects/datasets/fingers/train/images
 train_ann_path: /home/andrew/projects/datasets/fingers/train/xml
 eval_images_path: /home/andrew/projects/datasets/fingers/train/images
 eval_ann_path: /home/andrew/projects/datasets/fingers/train/xml
-predict_images_path: 
-predict_output_path: /home/andrew/projects/htracking/tools/predict/output
+detect_images_path: 
+detect_output_path: 
 
 # Model settings
 model_params: 
@@ -20,9 +20,10 @@ model_params:
 
 # YOLO settings
 yolo:
-    anchors: [[[91,38], [100,204], [103,115]], 
-              [[108,154], [117,219], [123,65]], 
-              [[131,178], [137,112], [142,235]]]
+    anchors: [[[82,24], [106,120], [111,158]], 
+              [[112,217], [114,40], [117,64]],
+              [[124,89], [135,124], [146,183]]]
+
 
 # Optimization    
 lr:
@@ -39,11 +40,11 @@ optimizer:
     
 batch_size: 8  #16
 epochs: 30    # Training epochs
-img_h: 416 # Height
-img_w: 416 # Width
+image_h: 416 # Height
+image_w: 416 # Width
 gpu_devices: [3] #  [0, 1, 2]                
 working_dir: /home/andrew/projects/datasets/fingers/train/run  #  replace with your working dir
-model_pretrained: /home/andrew/projects/htracking/tools/train/run/darknet_53/size416x416_try0/20180725150154/model.pth
+model_pretrained: /home/andrew/projects/htracking/tools/train/run/darknet_53/size416x416_try0/20180726132620/model.pth
 evaluate_type": "" 
 try: 0
 

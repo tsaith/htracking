@@ -43,6 +43,9 @@ gpu_devices = config["gpu_devices"]
 num_gpus = len(gpu_devices)
 
 batch_size = config["batch_size"] * num_gpus
+image_w = config['image_w']
+image_h = config['image_h']
+
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(map(str, gpu_devices))
 
@@ -51,6 +54,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(map(str, gpu_devices))
 is_training = False
 classes = config["classes"]
 num_classes = len(classes)
+
 
 # Load and initialize network
 net = ModelMain(config, is_training=is_training)
@@ -73,13 +77,12 @@ else:
 # YOLO loss with 3 scales
 yolo_losses = []
 for i in range(3):
-    yolo_losses.append(YOLOLoss(config["yolo"]["anchors"][i],
-                                num_classes, (config["img_w"], config["img_h"])))
+    yolo_losses.append(YOLOLoss(config["yolo"]["anchors"][i], num_classes, (image_w, image_h)))
 
-    
-# Dataset     
+
+# Dataset
 eval_images_path = config['eval_images_path']
-eval_ann_path = config['eval_ann_path']  
+eval_ann_path = config['eval_ann_path']
 
 transform = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
 target_transform = torchvision.transforms.Compose([ListToNumpy(), NumpyToTensor()])
@@ -87,8 +90,8 @@ dataset = VOCDetection(eval_images_path, eval_ann_path, transform=transform, tar
 
 # Data loader
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
-                                         shuffle=False, num_workers=32, pin_memory=True)      
-    
+                                         shuffle=False, num_workers=32, pin_memory=True)
+
 
 # Start the eval loop
 logging.info("Start eval.")
@@ -110,8 +113,8 @@ for step, samples in enumerate(dataloader):
             target_sample = labels[sample_i, labels[sample_i, :, 3] != 0]
             for obj_cls, tx, ty, tw, th in target_sample:
                 # Get rescaled gt coordinates
-                tx1, tx2 = config["img_w"] * (tx - tw / 2), config["img_w"] * (tx + tw / 2)
-                ty1, ty2 = config["img_h"] * (ty - th / 2), config["img_h"] * (ty + th / 2)
+                tx1, tx2 = image_w * (tx - tw / 2), image_w * (tx + tw / 2)
+                ty1, ty2 = image_h * (ty - th / 2), image_h * (ty + th / 2)
                 n_gt += 1
                 box_gt = torch.cat([coord.unsqueeze(0) for coord in [tx1, ty1, tx2, ty2]]).view(1, -1)
                 sample_pred = output[sample_i]

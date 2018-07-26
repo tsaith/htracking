@@ -93,6 +93,10 @@ config = read_config(config_path)
 gpu_devices = config["gpu_devices"]
 num_gpus = len(gpu_devices)
 batch_size = config["batch_size"] * num_gpus
+image_w = config["image_w"]
+image_h = config["image_h"]
+
+
 
 # Show parameters
 print("Start training:")
@@ -102,7 +106,7 @@ print("batch_size = {}".format(batch_size))
 # Create sub_working_dir
 sub_working_dir = '{}/{}/size{}x{}_try{}/{}'.format(
     config['working_dir'], config['model_params']['backbone_name'],
-    config['img_w'], config['img_h'], config['try'],
+    image_w, image_h, config['try'],
     time.strftime("%Y%m%d%H%M%S", time.localtime()))
 if not os.path.exists(sub_working_dir):
     os.makedirs(sub_working_dir)
@@ -147,8 +151,7 @@ if config["pretrain_snapshot"]:
 # YOLO loss with 3 scales
 yolo_losses = []
 for i in range(3):
-    yolo_losses.append(YOLOLoss(config["yolo"]["anchors"][i],
-                                num_classes, (config["img_w"], config["img_h"])))
+    yolo_losses.append(YOLOLoss(config["yolo"]["anchors"][i], num_classes, (image_w, image_h)))
 
 # Dataset
 train_images_path = config['train_images_path']

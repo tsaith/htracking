@@ -8,8 +8,8 @@ train_images_path: /home/andrew/projects/datasets/fingers/train/images
 train_ann_path: /home/andrew/projects/datasets/fingers/train/xml
 eval_images_path: "" 
 eval_ann_path: ""
-predict_images_path: /home/andrew/projects/datasets/fingers/quick_test/images
-predict_output_path: /home/andrew/projects/htracking/tools/predict/output
+detect_images_path: /home/andrew/projects/datasets/fingers/quick_test/images
+detect_output_path: /home/andrew/projects/htracking/tools/detect/output
 
 # Model settings
 model_params: 
@@ -37,17 +37,17 @@ optimizer:
     
 batch_size: 8  #16
 epochs: 30    # Training epochs
-img_h: 416 # Height
-img_w: 416 # Width
+image_h: 416 # Height
+image_w: 416 # Width
 gpu_devices: [3] #  [0, 1, 2]              
 working_dir:  #  replace with your working dir
-model_pretrained: /home/andrew/projects/htracking/tools/train/run/darknet_53/size416x416_try0/20180725150154/model.pth
+model_pretrained: /home/andrew/projects/htracking/tools/train/run/darknet_53/size416x416_try0/20180726132620/model.pth
 evaluate_type": "" 
 try: 0
 
 confidence: 0.5 
-confidence_thresh: 0.8
-nms_thresh: 0.5
+confidence_thresh: 0.90
+nms_thresh: 0.8
 
 export_onnx: False
 
