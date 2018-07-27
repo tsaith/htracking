@@ -41,7 +41,7 @@ image_h: 416 # Height
 image_w: 416 # Width
 gpu_devices: [3] #  [0, 1, 2]              
 working_dir:  #  replace with your working dir
-model_pretrained: /home/andrew/projects/htracking/tools/train/run/darknet_53/size416x416_try0/20180726132620/model.pth
+model_pretrained: /home/andrew/projects/htracking/tools/train/run/darknet_53/size416x416_try0/20180727112703/model.pth
 evaluate_type": "" 
 try: 0
 
