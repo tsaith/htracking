@@ -1,14 +1,14 @@
 # Operation phase: train / eval / predict
 phase: train 
 
-classes: ['hand']
+classes: ['index', 'middle']
 
 # Train / eval / predict paths
-train_images_path: /home/andrew/projects/datasets/hands/train/images
-train_ann_path: /home/andrew/projects/datasets/hands/train/xml
+train_images_path: /home/andrew/projects/datasets/fingers/train/images
+train_ann_path: /home/andrew/projects/datasets/fingers/train/xml
 eval_images_path: "" 
 eval_ann_path: ""
-predict_images_path: /home/andrew/projects/datasets/hands/eval/images
+predict_images_path: /home/andrew/projects/datasets/fingers/train/images
 predict_output_path: output
 
 # Model settings
@@ -40,7 +40,7 @@ epochs: 30    # Training epochs
 img_h: 416 # Height
 img_w: 416 # Width
 gpu_devices: [0, 1]                 #  config GPU devices
-working_dir: /home/andrew/projects/htracking/htracking/yolo3/training/run/hands  #  replace with your working dir
+working_dir: /home/andrew/projects/htracking/htracking/yolo3/training/fingers/run  #  replace with your working dir
 
 pretrain_snapshot: ""                       #  load checkpoint
 evaluate_type": "" 

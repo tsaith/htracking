@@ -141,10 +141,11 @@ lr_scheduler = optim.lr_scheduler.StepLR(
 net = nn.DataParallel(net)
 net = net.cuda()
 
-# Restore pretrain model
-if config["pretrain_snapshot"]:
-    logging.info("Load pretrained weights from {}".format(config["pretrain_snapshot"]))
-    state_dict = torch.load(config["pretrain_snapshot"])
+# Restore pretrained model
+model_pretrained = config["model_pretrained"]
+if model_pretrained:
+    logging.info("Load pretrained weights from {}".format(model_pretrained))
+    state_dict = torch.load(model_pretrained)
     net.load_state_dict(state_dict)
 
 

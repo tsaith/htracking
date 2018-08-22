@@ -47,11 +47,12 @@ def print_anchors(centroids, image_width=416, image_height=416):
     widths = anchors[:, 0]
     sorted_indices = np.argsort(widths)
 
-    r = "anchors: ["
-    for i in sorted_indices:
-        out_string += '[' + str(int(anchors[i,0]*image_width)) + ',' + str(int(anchors[i,1]*image_height)) + '], '
+    anchors_sorted = [[] for i in range(3)]
+    for j, i in enumerate(sorted_indices):
+        anchors_sorted[j%3].append([int(anchors[i,0]*image_width), int(anchors[i,1]*image_height)])
 
-    print(out_string[:-2])
+    print("anchors:")
+    print(anchors_sorted)
 
 def run_kmeans(ann_dims, anchor_num):
     ann_num = ann_dims.shape[0]

@@ -1,27 +1,27 @@
 # Operation phase: train / eval / predict
 phase: train 
 
-classes: ['index', 'middle']
+classes: ['Hand']
 
 # Train / eval / predict paths
-train_images_path: /home/andrew/projects/datasets/fingers/train/images
-train_ann_path: /home/andrew/projects/datasets/fingers/train/xml
-eval_images_path: "" 
-eval_ann_path: ""
-detect_images_path: /home/andrew/projects/datasets/fingers/train/images
+train_images_path: /home/andrew/projects/datasets/hands/train/images
+train_ann_path: /home/andrew/projects/datasets/hands/train/xml
+eval_images_path: /home/andrew/projects/datasets/hands/eval/images
+eval_ann_path: /home/andrew/projects/datasets/hands/eval/xml
+detect_images_path: /home/andrew/projects/datasets/hands/eval/images
 detect_output_path: output
 
 # Model settings
 model_params: 
     backbone_name: darknet_53
-    backbone_pretrained: /home/andrew/projects/htracking/weights/darknet53_weights_pytorch.pth #  set empty to disable
+    backbone_pretrained: /home/andrew/projects/htracking/htracking/yolo3/weights/darknet53_weights_pytorch.pth #  set empty to disable
 
 # YOLO settings
 yolo:
-    anchors: [[[82,24], [106,120], [111,158]], 
-              [[112,217], [114,40], [117,64]],
-              [[124,89], [135,124], [146,183]]]
-
+    anchors: [[[45,49], [57,62], [71,75]],
+              [[73,96], [99,84], [100,108]], 
+              [[103,132], [114,52], [136,121]]]
+    
 # Optimization    
 lr:
     backbone_lr: 0.001
@@ -36,19 +36,21 @@ optimizer:
 
     
 batch_size: 8  #16
-epochs: 30    # Training epochs
+epochs: 3000    # Training epochs
 image_h: 416 # Height
 image_w: 416 # Width
 gpu_devices: [0, 1, 2]                 #  config GPU devices
-working_dir: /home/andrew/projects/htracking/tools/train/run  #  replace with your working dir
-
-pretrain_snapshot: ""                       #  load checkpoint
+#gpu_devices: [3]                 #  config GPU devices
+working_dir: /home/andrew/projects/htracking/tools/train/run/hands  #  replace with your working dir
+model_pretrained: /home/andrew/projects/htracking/tools/train/run/hands/darknet_53/size416x416_try0/20180822155629/model.pth
+#model_pretrained: 
 evaluate_type": "" 
 try: 0
 
 confidence: 0.5 
-confidence_thresh: 0.5
-nms_thresh: 0.4
+confidence_thresh: 0.7
+nms_thresh: 0.5
+iou_thresh: 0.5
 
 export_onnx: False
 

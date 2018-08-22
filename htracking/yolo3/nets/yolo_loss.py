@@ -3,7 +3,8 @@ import torch.nn as nn
 import numpy as np
 import math
 
-from ..common.utils import bbox_iou
+from htracking.yolo3.common.utils import bbox_iou
+#from common.utils import bbox_iou
 
 
 class YOLOLoss(nn.Module):
@@ -102,8 +103,8 @@ class YOLOLoss(nn.Module):
         th = torch.zeros(bs, self.num_anchors, in_h, in_w, requires_grad=False)
         tconf = torch.zeros(bs, self.num_anchors, in_h, in_w, requires_grad=False)
         tcls = torch.zeros(bs, self.num_anchors, in_h, in_w, self.num_classes, requires_grad=False)
-        for b in range(bs): # instance
-            for t in range(target.shape[1]): # object
+        for b in range(bs):
+            for t in range(target.shape[1]):
                 if target[b, t].sum() == 0:
                     continue
                 # Convert to position relative to box
@@ -122,7 +123,7 @@ class YOLOLoss(nn.Module):
                 # Calculate iou between gt and anchor shapes
                 anch_ious = bbox_iou(gt_box, anchor_shapes)
                 # Where the overlap is larger than threshold set mask to zero (ignore)
-                noobj_mask[b, anch_ious > ignore_threshold] = 0
+                noobj_mask[b, anch_ious > ignore_threshold, gj, gi] = 0
                 # Find the best matching anchor box
                 best_n = np.argmax(anch_ious)
 
