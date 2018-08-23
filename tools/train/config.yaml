@@ -29,6 +29,7 @@ lr:
     freeze_backbone: False   #  freeze backbone wegiths to finetune
     decay_gamma: 0.1
     decay_step: 20           #  decay lr in every ? epochs
+    patience: 10 # Scheduler uses this number of epochs to delay lr
     
 optimizer:
     type: sgd
@@ -42,7 +43,7 @@ image_w: 416 # Width
 gpu_devices: [0, 1, 2]                 #  config GPU devices
 #gpu_devices: [3]                 #  config GPU devices
 working_dir: /home/andrew/projects/htracking/tools/train/run/hands  #  replace with your working dir
-model_pretrained: /home/andrew/projects/htracking/tools/train/run/hands/darknet_53/size416x416_try0/20180822155629/model.pth
+model_pretrained: /home/andrew/projects/htracking/tools/train/run/hands/darknet_53/size416x416_try0/20180822174009/model.pth
 #model_pretrained: 
 evaluate_type": "" 
 try: 0

@@ -1,11 +1,47 @@
-from . import VocAnnotation
+from .voc_annotation import VOCAnnotation
 import os
 import csv
+import copy
 from PIL import Image, ImageDraw
 
 
+def class_filter(anns_in, classes):
+    """
+    Annotation class filter.
+    """
+    anns = []
+    for ann_in in anns_in:
+        ann = copy.deepcopy(ann_in)
+        #ann = ann_in.copy()
+        objects = [] # New object list
+        for obj in ann['objects']:
+            name = obj[0]
+            if name in classes:
+                objects.append(obj)
+        ann['objects'] = objects
+
+        # If object exists
+        if len(objects) > 0:
+            anns.append(ann)
+
+    return anns
+
+def class_map(anns_in, mapping):
+    """
+    Annotation class mapping.
+    """
+
+    anns = copy.deepcopy(anns_in)
+    for ann in anns:
+        for obj in ann['objects']:
+            name = obj[0]
+            if name in mapping.keys():
+                obj[0] = mapping[name]
+
+    return anns
+
 def csv_to_voc(csv_path, xml_dir_path):
-    # Convert one csv file into xml files with Pascal Voc format.
+    # Convert one csv file into xml files with Pascal VOC format.
 
     if not os.path.exists(xml_dir_path):
         os.makedirs(xml_dir_path)
@@ -25,7 +61,7 @@ def csv_to_voc(csv_path, xml_dir_path):
         xmax = row['xmax']
         ymax = row['ymax']
 
-        ann = VocAnnotation(filename, width, height, depth=3)
+        ann = VOCAnnotation(filename, width, height, depth=3)
         new_object = [class_name, 0, xmin, ymin, xmax, ymax]
         ann.add_object(new_object)
 

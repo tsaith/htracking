@@ -11,7 +11,7 @@ import codecs
 XML_EXT = '.xml'
 ENCODE_METHOD = 'utf-8'
 
-class VocWriter:
+class VOCWriter:
 
     def __init__(self, foldername, filename, imgSize,databaseSrc='Unknown', localImgPath=None):
         self.foldername = foldername
@@ -127,7 +127,7 @@ class VocWriter:
         out_file.close()
 
 
-class VocReader:
+class VOCReader:
 
     def __init__(self, filepath):
         # shapes type:

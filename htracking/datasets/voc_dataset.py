@@ -8,6 +8,7 @@ import glob
 import copy
 from PIL import Image, ImageDraw
 import xml.etree.ElementTree as ET
+from .voc_utils import class_map, class_filter
 
 def xml_annotations(filepath):
     '''
@@ -54,8 +55,18 @@ class VOCDetection(Dataset):
     Dataset of Pascal VOC Detection.
     '''
 
-    def __init__(self, image_dir, ann_dir, classes=None, transform=None, target_transform=None,
-                 normalize_coordinates=True):
+    def __init__(self, image_dir, ann_dir, mapping=None, classes=None, transform=None, target_transform=None, normalize_coordinates=True):
+
+        """
+        image_dir: str
+            Image directory path.
+        ann_dir: str
+            Annotation directory path.
+        mapping: dict
+            Mapping dict of classes.
+        classes: list
+            List of expected classes.
+        """
 
         self.image_dir = image_dir
         self.ann_dir = ann_dir
@@ -66,9 +77,18 @@ class VOCDetection(Dataset):
         if os.path.exists(ann_dir):
             ann_files = glob.glob(os.path.join(self.ann_dir, '*.xml'))
         else:
-            print("Annotation diretory doesn't exist!")
+            print("Error: Annotation directory doesn't exist!")
+            print("Error: Expected path is {}".format(ann_dir))
 
         self.anns = [xml_annotations(f) for f in ann_files]
+
+        # Class mapping
+        if mapping:
+            self.anns = class_map(self.anns, mapping)
+
+        # Only keep the expected classes
+        if classes:
+            self.anns = class_filter(self.anns, classes)
 
         # Object names
         self.names = self.prepare_object_names()

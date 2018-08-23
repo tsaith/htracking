@@ -1,8 +1,8 @@
-from . import VocWriter
+from .voc_io import VOCWriter
 
-class VocAnnotation:
+class VOCAnnotation:
     '''
-    Pascal Voc Annotation.
+    Pascal VOC Annotation.
     '''
 
     def __init__(self, filename, width, height, depth=3, filepath=""):
@@ -26,7 +26,7 @@ class VocAnnotation:
         image_size = [self.height, self.width, self.depth]
         image_path = self.filepath
 
-        writer = VocWriter(dirname, self.filename, imgSize=image_size, databaseSrc='Unknown', 
+        writer = VOCWriter(dirname, self.filename, imgSize=image_size, databaseSrc='Unknown', 
                                  localImgPath=image_path)
         root = writer.genXML()
         writer.appendObjects(root)
