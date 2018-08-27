@@ -83,8 +83,8 @@ class VOCDetection(Dataset):
         self.anns = [xml_annotations(f) for f in ann_files]
 
         # Class mapping
-        if mapping:
-            self.anns = class_map(self.anns, mapping)
+        if class_mapping:
+            self.anns = class_map(self.anns, class_mapping)
 
         # Only keep the expected classes
         if classes:
