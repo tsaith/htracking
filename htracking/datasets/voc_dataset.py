@@ -55,14 +55,14 @@ class VOCDetection(Dataset):
     Dataset of Pascal VOC Detection.
     '''
 
-    def __init__(self, image_dir, ann_dir, mapping=None, classes=None, transform=None, target_transform=None, normalize_coordinates=True):
+    def __init__(self, image_dir, ann_dir, class_mapping=None, classes=None, transform=None, target_transform=None, normalize_coordinates=True):
 
         """
         image_dir: str
             Image directory path.
         ann_dir: str
             Annotation directory path.
-        mapping: dict
+        class_mapping: dict
             Mapping dict of classes.
         classes: list
             List of expected classes.
