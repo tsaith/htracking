@@ -155,12 +155,16 @@ for i in range(3):
     yolo_losses.append(YOLOLoss(config["yolo"]["anchors"][i], num_classes, (image_w, image_h)))
 
 # Dataset
+class_mapping = {'Hand': 'hand'}
+
 train_images_path = config['train_images_path']
 train_ann_path = config['train_ann_path']
 
 transform = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
 target_transform = torchvision.transforms.Compose([ListToNumpy(), NumpyToTensor()])
-dataset = VOCDetection(train_images_path, train_ann_path, transform=transform, target_transform=target_transform)
+dataset = VOCDetection(train_images_path, train_ann_path,
+                       class_mapping=class_mapping, classes=classes,
+                       transform=transform, target_transform=target_transform)
 
 # Data loader
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
