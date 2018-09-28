@@ -1,0 +1,59 @@
+# Operation phase: train / eval / predict
+phase: train 
+
+classes: ['hand']
+
+# Train / eval / predict paths
+train_images_path: /home/andrew/projects/datasets/gestures/train/images
+train_ann_path: /home/andrew/projects/datasets/gestures/train/xml
+eval_images_path: /home/andrew/projects/datasets/gestures/eval/images
+eval_ann_path: /home/andrew/projects/datasets/gestures/eval/xml
+detect_images_path: /home/andrew/projects/datasets/gestures/eval/images
+detect_output_path: output
+
+# Model settings
+model_params: 
+    backbone_name: darknet_53
+    backbone_pretrained: /home/andrew/projects/htracking/htracking/yolo3/weights/darknet53_weights_pytorch.pth #  set empty to disable
+
+# YOLO settings
+yolo:
+    anchors: [[[45,49], [57,62], [71,75]],
+              [[73,96], [99,84], [100,108]], 
+              [[103,132], [114,52], [136,121]]]
+    
+# Optimization    
+lr:
+    backbone_lr: 0.001
+    other_lr: 0.01
+    freeze_backbone: False   #  freeze backbone wegiths to finetune
+    decay_gamma: 0.1
+    decay_step: 20           #  decay lr in every ? epochs
+    patience: 10 # Scheduler uses this number of epochs to delay lr
+    
+optimizer:
+    type: sgd
+    weight_decay: 0.00004 #4e-05, note that yaml doesn't support scientific notation
+
+    
+batch_size: 8  #16
+epochs: 200    # Training epochs
+image_h: 416 # Height
+image_w: 416 # Width
+gpu_devices: [0, 1, 2]                 #  config GPU devices
+#gpu_devices: [3]                 #  config GPU devices
+working_dir: /home/andrew/projects/htracking/tools/detect_gestures/run  #  replace with your working dir
+# Classes: 'hand' only
+model_pretrained: /home/andrew/projects/htracking/tools/detect_gestures/run/hands/darknet_53/size416x416_try0/20180828115636/model.pth
+#model_pretrained: 
+evaluate_type": "" 
+try: 0
+
+confidence: 0.5 
+confidence_thresh: 0.5
+nms_thresh: 0.5
+iou_thresh: 0.5
+
+export_onnx: False
+
+

@@ -55,21 +55,23 @@ class VOCDetection(Dataset):
     Dataset of Pascal VOC Detection.
     '''
 
-    def __init__(self, image_dir, ann_dir, class_mapping=None, classes=None, transform=None, target_transform=None, normalize_coordinates=True):
+    def __init__(self, image_dir, ann_dir, classes=None, class_mapping=None, transform=None, target_transform=None, normalize_coordinates=True):
 
         """
         image_dir: str
             Image directory path.
         ann_dir: str
             Annotation directory path.
-        class_mapping: dict
-            Mapping dict of classes.
         classes: list
             List of expected classes.
+        class_mapping: dict
+            Mapping dict of classes.
         """
 
         self.image_dir = image_dir
         self.ann_dir = ann_dir
+        self.classes = classes
+        self.class_mapping = class_mapping
         self.transform = transform
         self.target_transform = target_transform
         self.normalize_coordinates = normalize_coordinates
@@ -90,7 +92,7 @@ class VOCDetection(Dataset):
         if classes:
             self.anns = class_filter(self.anns, classes)
 
-        # Object names
+        # Object names in the dataset
         self.names = self.prepare_object_names()
 
         # Name dictionary
@@ -107,7 +109,7 @@ class VOCDetection(Dataset):
         if self.target_transform is not None:
             target = self.target_transform(target)
 
-        sample = {'image': image, 'label': target}
+        sample = {'image': image, 'target': target}
         return sample
 
     def __len__(self):
@@ -149,12 +151,18 @@ class VOCDetection(Dataset):
 
     def prepare_object_names(self):
         # Prepare the object names
-        names = []
-        for ann in self.anns:
-            objects = ann['objects']
-            for obj in objects:
-                names.append(obj[0])
-        return sorted(list(set(names)))
+
+        if self.classes:
+            names = self.classes
+        else:
+            names = []
+            for ann in self.anns:
+                objects = ann['objects']
+                for obj in objects:
+                    names.append(obj[0])
+            names = sorted(list(set(names)))
+
+        return names
 
     def prepare_namedict(self):
         # Prepare the name dictionary

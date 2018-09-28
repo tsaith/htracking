@@ -42,11 +42,11 @@ image_h: 416 # Height
 image_w: 416 # Width
 gpu_devices: [0, 1, 2]                 #  config GPU devices
 #gpu_devices: [3]                 #  config GPU devices
-working_dir: /home/andrew/projects/htracking/tools/hand/run/hands  #  replace with your working dir
+working_dir: /home/andrew/projects/htracking/tools/detect_hands/run/hands  #  replace with your working dir
 # Classes: 'hand' only
-model_pretrained: /home/andrew/projects/htracking/tools/hand/run/hands/darknet_53/size416x416_try0/20180828115636/model.pth
+model_pretrained: /home/andrew/projects/htracking/tools/detect_hands/run/hands/darknet_53/size416x416_try0/20180828115636/model.pth
 # Classes: 'hand' and 'indexb'
-#model_pretrained: /home/andrew/projects/htracking/tools/hand/run/hands/darknet_53/size416x416_try0/20180827171807/model.pth
+#model_pretrained: /home/andrew/projects/htracking/tools/detect_hands/run/hands/darknet_53/size416x416_try0/20180827171807/model.pth
 #model_pretrained: 
 evaluate_type": "" 
 try: 0

@@ -2,6 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 
+def imshow_bgr(image):
+    """
+    Show the image with the channel format as BGR.
+    """
+    # Roll BGR to RGB
+    img = np.roll(image, 1, axis=2)
+    plt.imshow(img)
+
 
 def imshow_tensor(inp, title=None):
     """Imshow for Tensor."""
