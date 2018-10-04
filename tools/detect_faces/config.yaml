@@ -1,14 +1,14 @@
 # Operation phase: train / eval / predict
 phase: train 
 
-classes: ['hand']
+classes: ['face']
 
 # Train / eval / predict paths
-train_images_path: /home/andrew/projects/datasets/hands/train/images
-train_ann_path: /home/andrew/projects/datasets/hands/train/xml
-eval_images_path: /home/andrew/projects/datasets/hands/eval/images
-eval_ann_path: /home/andrew/projects/datasets/hands/eval/xml
-detect_images_path: /home/andrew/projects/datasets/hands/eval/images
+train_images_path: /home/andrew/projects/datasets/faces/train/images
+train_ann_path: /home/andrew/projects/datasets/faces/train/xml
+eval_images_path: /home/andrew/projects/datasets/faces/train/images
+eval_ann_path: /home/andrew/projects/datasets/faces/train/xml
+detect_images_path: /home/andrew/projects/datasets/faces/train/images
 detect_output_path: output
 
 # Model settings
@@ -25,26 +25,26 @@ yolo:
 # Optimization    
 lr:
     backbone_lr: 0.001
-    other_lr: 0.01
+    other_lr: 0.001
     freeze_backbone: False   #  freeze backbone wegiths to finetune
     decay_gamma: 0.1
-    decay_step: 20           #  decay lr in every ? epochs
+    decay_step: 10           #  decay lr in every ? epochs
     patience: 10 # Scheduler uses this number of epochs to delay lr
     
 optimizer:
-    type: sgd
+    type: adam
     weight_decay: 0.00004 #4e-05, note that yaml doesn't support scientific notation
 
     
 batch_size: 8  #16
-epochs: 3 #200    # Training epochs
+epochs: 200 #200    # Training epochs
 image_h: 416 # Height
 image_w: 416 # Width
-gpu_devices: [0] #[0, 1, 2]                 #  config GPU devices
+gpu_devices: [0, 1, 2, 3] #[0, 1, 2]                 #  config GPU devices
 #gpu_devices: [3]                 #  config GPU devices
-working_dir: /home/andrew/projects/htracking/tools/detect_hands/run/hands  #  replace with your working dir
+working_dir: /home/andrew/projects/htracking/tools/detect_faces/run  #  replace with your working dir
 # Classes: 'hand' only
-model_pretrained: /home/andrew/projects/htracking/tools/detect_hands/run/hands/darknet_53/size416x416_try0/20180828115636/model.pth
+model_pretrained: /home/andrew/projects/htracking/tools/detect_faces/run/darknet_53/size416x416_try0/20181004161044/model.pth
 #model_pretrained: 
 evaluate_type": "" 
 try: 0

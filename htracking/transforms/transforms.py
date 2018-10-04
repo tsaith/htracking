@@ -5,13 +5,17 @@ import torch
 class ListToNumpy(object):
     # Convet list object into numpy array with fixed shape.
 
-    def __init__(self, max_objects=20):
+    def __init__(self, max_objects=200):
         self.max_objects = max_objects
 
     def __call__(self, target):
 
         target = np.asarray(target)
         num_objects, num_attributes = target.shape
+
+        if num_objects > self.max_objects:
+            print("Error: num_objects = {}".format(num_objects))
+
         assert num_objects <= self.max_objects
 
         filled_target = np.zeros((self.max_objects, num_attributes), np.float32)

@@ -185,14 +185,21 @@ class VOCDetection(Dataset):
 
         for obj in target:
 
-            class_index, xmin, ymin, width, height = obj
+            class_index, xc, yc, width, height = obj
             name = self.names[class_index]
 
+            # Invert to unnormalized scale
+            if self.normalize_coordinates:
+                xc *= image_width
+                yc *= image_height
+                width *= image_width
+                height *= image_height
+
             # coordinates in pixel unit
-            xmin = int(xmin * image_width)
-            ymin = int(ymin * image_height)
-            width = int(width * image_width)
-            height = int(height * image_height)
+            xmin = int(xc - 0.5*width)
+            ymin = int(yc - 0.5*height)
+            width = int(width)
+            height = int(height)
 
             xmax = xmin + width
             ymax = ymin + height

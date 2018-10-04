@@ -6,3 +6,4 @@ from .io_utils import *
 from .plot_utils import *
 from .colors import get_rgb_colors
 from .load_utils import find_class_files
+from .gui_utils import wait_key, define_rect
