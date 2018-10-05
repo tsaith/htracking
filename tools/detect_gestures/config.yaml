@@ -6,8 +6,8 @@ classes: ['hand']
 # Train / eval / predict paths
 train_images_path: /home/andrew/projects/datasets/gestures/train/images
 train_ann_path: /home/andrew/projects/datasets/gestures/train/xml
-eval_images_path: /home/andrew/projects/datasets/gestures/eval/images
-eval_ann_path: /home/andrew/projects/datasets/gestures/eval/xml
+val_images_path: /home/andrew/projects/datasets/gestures/val/images
+val_ann_path: /home/andrew/projects/datasets/gestures/val/xml
 detect_images_path: /home/andrew/projects/datasets/gestures/eval/images
 detect_output_path: output
 

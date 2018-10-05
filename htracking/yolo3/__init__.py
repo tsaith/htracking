@@ -1,2 +1,2 @@
-from .nets.model_main import ModelMain
-from .nets.yolo_loss import YOLOLoss
+from .yolo3_model import YOLO3_MODEL
+from .nets import ModelMain, YOLOLoss

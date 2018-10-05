@@ -5,6 +5,7 @@ import random
 import argparse
 
 import torchvision
+from torchvision import transforms
 
 import htracking
 from htracking.datasets import VOCDetection
@@ -113,7 +114,7 @@ print("Finding the anchors:")
 train_images_path = config['train_images_path']
 train_ann_path = config['train_ann_path']
 
-transform = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
+transform = transforms.Compose([transforms.Resize(416), transforms.ToTensor(), ])
 target_transform = torchvision.transforms.Compose([ListToNumpy(), NumpyToTensor()])
 dataset = VOCDetection(train_images_path, train_ann_path, transform=transform, target_transform=target_transform)
 
@@ -125,7 +126,7 @@ for i in range(num_samples):
 #or i in range(36):
     #print("Sample({})".format(i))
     sample = dataset[i]
-    anns = sample['label']
+    anns = sample['target']
     for ann in anns:
         # Normalized width and height
         width = ann[3]

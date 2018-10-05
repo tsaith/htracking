@@ -6,8 +6,8 @@ classes: ['face']
 # Train / eval / predict paths
 train_images_path: /home/andrew/projects/datasets/faces/train/images
 train_ann_path: /home/andrew/projects/datasets/faces/train/xml
-eval_images_path: /home/andrew/projects/datasets/faces/train/images
-eval_ann_path: /home/andrew/projects/datasets/faces/train/xml
+val_images_path: /home/andrew/projects/datasets/faces/train/images
+val_ann_path: /home/andrew/projects/datasets/faces/train/xml
 detect_images_path: /home/andrew/projects/datasets/faces/train/images
 detect_output_path: output
 
@@ -18,9 +18,9 @@ model_params:
 
 # YOLO settings
 yolo:
-    anchors: [[[45,49], [57,62], [71,75]],
-              [[73,96], [99,84], [100,108]], 
-              [[103,132], [114,52], [136,121]]]
+    anchors: [[[17, 20], [38, 51], [93, 123]], 
+              [[22, 28], [50, 67], [128, 169]], 
+              [[29, 38], [68, 90], [189, 241]]]
     
 # Optimization    
 lr:
@@ -32,27 +32,27 @@ lr:
     patience: 10 # Scheduler uses this number of epochs to delay lr
     
 optimizer:
-    type: adam
+    type: adm # adam or sgd
     weight_decay: 0.00004 #4e-05, note that yaml doesn't support scientific notation
 
     
 batch_size: 8  #16
-epochs: 200 #200    # Training epochs
+epochs: 20 #200    # Training epochs
 image_h: 416 # Height
 image_w: 416 # Width
-gpu_devices: [0, 1, 2, 3] #[0, 1, 2]                 #  config GPU devices
+gpu_devices: [0, 1, 2] #[0, 1, 2]                 #  config GPU devices
 #gpu_devices: [3]                 #  config GPU devices
 working_dir: /home/andrew/projects/htracking/tools/detect_faces/run  #  replace with your working dir
 # Classes: 'hand' only
-model_pretrained: /home/andrew/projects/htracking/tools/detect_faces/run/darknet_53/size416x416_try0/20181004161044/model.pth
+model_pretrained: /home/andrew/projects/htracking/tools/detect_faces/run/darknet_53/size416x416_try0/20181005143314/model.pth # from WIDER
 #model_pretrained: 
 evaluate_type": "" 
 try: 0
 
-confidence: 0.5 
-confidence_thresh: 0.5
-nms_thresh: 0.5
-iou_thresh: 0.5
+confidence: 0.8 
+confidence_thresh: 0.8
+nms_thresh: 0.8
+iou_thresh: 0.8
 
 export_onnx: False
 
