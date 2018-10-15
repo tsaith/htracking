@@ -1,8 +1,39 @@
 from .voc_annotation import VOCAnnotation
+from .voc_io import VOCWriter
 import os
 import csv
 import copy
 from PIL import Image, ImageDraw
+
+
+def write_voc_file(objects, ann_path, image_filename, image_path, image_size):
+    """
+    Write out Pascal VOC file.
+
+    Parameters
+    ----------
+    image_size: tuple
+        Image size with the format of (height, width, depth)
+    """
+
+    image_folder = 'images'
+    writer = VOCWriter(image_folder, image_filename, imgSize=image_size,
+                       databaseSrc='Unknown', localImgPath=image_path)
+    root = writer.genXML()
+    writer.appendObjects(root)
+
+    # Bounding boxes
+    for obj in objects:
+        name = obj['name']
+        xmin = obj['xmin']
+        xmax = obj['xmax']
+        ymin = obj['ymin']
+        ymax = obj['ymax']
+        difficulty = 0
+
+        writer.addBndBox(xmin, ymin, xmax, ymax, name, difficulty)
+
+    writer.save(ann_path)
 
 
 def class_filter(anns_in, classes):

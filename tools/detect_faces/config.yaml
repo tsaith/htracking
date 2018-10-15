@@ -18,9 +18,9 @@ model_params:
 
 # YOLO settings
 yolo:
-    anchors: [[[17, 20], [38, 51], [93, 123]], 
-              [[22, 28], [50, 67], [128, 169]], 
-              [[29, 38], [68, 90], [189, 241]]]
+    anchors: [[[52, 47], [67, 72], [89, 86]], 
+              [[55, 76], [73, 95], [96, 115]], 
+              [[65, 85], [83, 105], [119, 147]]]
     
 # Optimization    
 lr:
@@ -36,21 +36,22 @@ optimizer:
     weight_decay: 0.00004 #4e-05, note that yaml doesn't support scientific notation
 
     
-batch_size: 8  #16
-epochs: 20 #200    # Training epochs
+batch_size: 12  #16
+epochs: 200 #200    # Training epochs
 image_h: 416 # Height
 image_w: 416 # Width
 gpu_devices: [0, 1, 2] #[0, 1, 2]                 #  config GPU devices
 #gpu_devices: [3]                 #  config GPU devices
 working_dir: /home/andrew/projects/htracking/tools/detect_faces/run  #  replace with your working dir
 # Classes: 'hand' only
-model_pretrained: /home/andrew/projects/htracking/tools/detect_faces/run/darknet_53/size416x416_try0/20181005143314/model.pth # from WIDER
+model_pretrained: /home/andrew/projects/htracking/tools/detect_faces/run/darknet_53/size416x416_try0/20181008164445/model.pth # from faces
+#model_pretrained: /home/andrew/projects/htracking/tools/detect_faces/run/darknet_53/size416x416_try0/20181005143314/model.pth # from WIDER
 #model_pretrained: 
 evaluate_type": "" 
 try: 0
 
-confidence: 0.8 
-confidence_thresh: 0.8
+confidence: 0.6 
+confidence_thresh: 0.6
 nms_thresh: 0.8
 iou_thresh: 0.8
 

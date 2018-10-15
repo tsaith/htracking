@@ -65,5 +65,23 @@ class YOLO3_MODEL:
 
         return detections
 
+    def objects_from(self, detections):
+        # Convert to an annotation.
+
+        objects = []
+
+        for x1, y1, x2, y2, conf, cls_conf, cls_pred in detections:
+            cls_index = int(cls_pred)
+
+            obj = {}
+            obj['name'] = self.classes[cls_index]
+            obj['xmin'] = int(x1)
+            obj['xmax'] = int(x2)
+            obj['ymin'] = int(y1)
+            obj['ymax'] = int(y2)
+
+            objects.append(obj)
+
+        return objects
 
 
