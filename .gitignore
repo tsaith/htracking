@@ -34,6 +34,8 @@ build/
 *.png
 *.jpg
 
+# Video
+*.mp4
 
 # Data files
 data/

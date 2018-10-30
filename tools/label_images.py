@@ -24,7 +24,6 @@ def run():
     Run the code.
     """
 
-
     # Main parameters
     gpu_devices = [3]
 
@@ -62,8 +61,8 @@ def run():
 
     # Generate the annotation files
 
-    ann_dir = "/home/andrew/projects/datasets/faces/tmp/xml"
-    image_dir = "/home/andrew/projects/datasets/faces/tmp/images"
+    ann_dir = "/home/andrew/projects/datasets/face_datasets/MYFACES/buffer/xml"
+    image_dir = "/home/andrew/projects/datasets/face_datasets/MYFACES/buffer/images"
 
     labeler = ImageLabeler(ann_dir, image_dir, model)
     labeler.run()

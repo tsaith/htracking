@@ -14,7 +14,8 @@ detect_output_path: output
 # Model settings
 model_params: 
     backbone_name: darknet_53
-    backbone_pretrained: /home/andrew/projects/htracking/htracking/yolo3/weights/darknet53_weights_pytorch.pth #  set empty to disable
+    backbone_pretrained: /home/andrew/projects/htracking/htracking/yolo3/weights/darknet53_weights_cpu.pth #  set empty to disable
+    #backbone_pretrained: /home/andrew/projects/htracking/htracking/yolo3/weights/darknet53_weights_gpu.pth #  set empty to disable
 
 # YOLO settings
 yolo:
@@ -37,14 +38,14 @@ optimizer:
 
     
 batch_size: 12  #16
-epochs: 200 #200    # Training epochs
+epochs: 3 #200    # Training epochs
 image_h: 416 # Height
 image_w: 416 # Width
-gpu_devices: [0, 1, 2] #[0, 1, 2]                 #  config GPU devices
+gpu_devices: [0, 1] #[0, 1, 2]                 #  config GPU devices
 #gpu_devices: [3]                 #  config GPU devices
 working_dir: /home/andrew/projects/htracking/tools/detect_faces/run  #  replace with your working dir
 # Classes: 'hand' only
-model_pretrained: /home/andrew/projects/htracking/tools/detect_faces/run/darknet_53/size416x416_try0/20181008164445/model.pth # from faces
+model_pretrained: /home/andrew/projects/htracking/tools/detect_faces/run/darknet_53/size416x416_try0/20181017144036/model.pth # from faces
 #model_pretrained: /home/andrew/projects/htracking/tools/detect_faces/run/darknet_53/size416x416_try0/20181005143314/model.pth # from WIDER
 #model_pretrained: 
 evaluate_type": "" 

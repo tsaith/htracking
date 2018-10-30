@@ -30,7 +30,8 @@ class YOLO3_MODEL:
 
         # Construct the network
         self.net = ModelMain(config, is_training=self.training)
-        self.net = nn.DataParallel(self.net).to(device)
+        self.net = nn.DataParallel(self.net)
+        self.net = self.net.to(device)
 
         self.confidence = config["confidence"]
         self.confidence_thresh = config["confidence_thresh"]
